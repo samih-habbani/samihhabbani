@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${base}/training-expertise/`,
+      url: `${base}/training-expertise`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,

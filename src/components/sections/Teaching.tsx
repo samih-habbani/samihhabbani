@@ -413,7 +413,7 @@ export function Teaching() {
       </motion.p>
 
       <motion.a
-        href="/training-expertise/"
+        href="/training-expertise"
         className="font-mono"
         initial={{ opacity: 0, y: 10 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}

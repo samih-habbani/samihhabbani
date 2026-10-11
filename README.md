@@ -6,14 +6,12 @@ Portfolio personnel — [samihhabbani.com](https://www.samihhabbani.com/)
 
 | Techno | Usage |
 |---|---|
-| **Next.js 16** (App Router) | Framework React, export statique |
+| **Next.js 16** (App Router) | Framework React, déployé sur Vercel |
 | **React 19** | UI |
 | **TypeScript** | Typage |
 | **Tailwind CSS 4** | Styling (utilisé partiellement — beaucoup de styles inline aussi) |
 | **Framer Motion** | Animations (scroll reveal, transitions, effets) |
 | **EmailJS** (`@emailjs/browser`) | Envoi du formulaire de contact, sans backend |
-
-Le site est compilé en **export statique** (`output: "export"` dans `next.config.ts`) : pas de serveur Node.js nécessaire en production, juste du HTML/CSS/JS à héberger.
 
 ## Structure du projet
 
@@ -38,34 +36,18 @@ npm run dev
 
 Ouvrir [http://localhost:3000](http://localhost:3000).
 
-## Mettre le site à jour sur OVH (hébergement mutualisé)
+## Déploiement (Vercel)
 
-Le site est statique : pas besoin de Node.js sur le serveur, juste d'envoyer les fichiers.
+Le site est hébergé sur **Vercel** : chaque `git push` sur `main` déclenche un build et une mise en production automatiques. Rien à compiler ni à envoyer à la main.
 
-### 1. Compiler
+### Configuration du projet Vercel
+- **Framework Preset** : Next.js (détecté automatiquement)
+- **Build Command / Output Directory** : laisser vide (valeurs par défaut)
+- **Environment Variables** (Settings → Environment Variables, à renseigner pour Production, Preview et Development) : les 3 clés EmailJS `NEXT_PUBLIC_EMAILJS_*` listées plus bas. Le fichier `.env.local` n'est pas versionné, Vercel ne le voit donc pas — sans ces variables, le formulaire de contact ne fonctionne pas.
+- **Domaine** : Settings → Domains → ajouter `samihhabbani.com` et `www.samihhabbani.com`, puis pointer le DNS chez OVH (enregistrement `A 76.76.21.21` pour la racine et `CNAME cname.vercel-dns.com` pour `www`, ou les valeurs affichées par Vercel).
 
-```bash
-npm run build
-```
-
-→ génère le dossier **`out/`** à la racine, avec tout le HTML/CSS/JS prêt à héberger.
-
-### 2. Envoyer sur OVH
-
-**Avec FileZilla (le plus simple) :**
-1. Récupérer les identifiants FTP dans l'espace client OVH → *Hébergements* → ton offre → *Général* → identifiants FTP
-2. Se connecter à `ftp.tonsite.com`
-3. Aller dans le dossier `www/` (racine web sur OVH mutualisé)
-4. Supprimer l'ancien contenu (ou faire une sauvegarde avant) et envoyer **tout le contenu** du dossier `out/` (pas le dossier `out` lui-même — son contenu directement à la racine de `www/`)
-
-**En ligne de commande (rsync/lftp) :**
-```bash
-lftp -u TON_LOGIN,TON_MOT_DE_PASSE ftp.tonsite.com -e "mirror -R out/ /www/; quit"
-```
-
-### Points d'attention
-- Le fichier `.env.local` n'est **jamais uploadé** — les clés EmailJS sont injectées en dur dans le JS au moment du `npm run build`, donc rien à configurer côté serveur
-- Vérifier que le certificat SSL (Let's Encrypt gratuit) est actif dans l'espace client OVH pour du HTTPS
+### Cache
+Les fichiers hachés de `/_next/static` sont mis en cache de façon permanente par Next/Vercel. Les médias de `public/` (images, vidéo) ont un cache de 30 jours défini dans `next.config.ts` ; les PDF (CV, catalogue) restent revalidés pour que leur remplacement soit visible immédiatement.
 
 ## Comment fonctionne l'envoi d'email (formulaire de contact)
 

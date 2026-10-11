@@ -16,12 +16,12 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: {
-    canonical: '/training-expertise/',
+    canonical: '/training-expertise',
   },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: '/training-expertise/',
+    url: '/training-expertise',
     siteName: 'Samih Habbani',
     images: ['/samih.webp'],
     locale: 'en_US',

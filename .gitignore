@@ -42,3 +42,6 @@ next-env.d.ts
 # large source video (exceeds GitHub's 100MB limit — use public/samih-intro.mp4 instead)
 public/Samih Habbani - English.mp4
 out/Samih Habbani - English.mp4
+
+# static export output (no longer used — deployed on Vercel)
+/out
