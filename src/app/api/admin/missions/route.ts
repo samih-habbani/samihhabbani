@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     if (providerId) where.providerId = providerId
     if (sp.get('available') === '1') {
       const forInvoice = parseInt(sp.get('forInvoice') || '') || -1
-      where.status = { not: 'cancelled' }
+      where.status = { notIn: ['cancelled', 'tbc'] } // unconfirmed missions can't be billed yet
       where.AND = [{ OR: [{ invoiceId: null }, { invoiceId: forInvoice }] }]
     }
 

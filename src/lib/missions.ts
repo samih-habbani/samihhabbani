@@ -39,7 +39,7 @@ export function parseMissionBody(body: unknown) {
   const currency = String(b.currency || 'AED')
   if (!(CURRENCIES as readonly string[]).includes(currency)) return { error: 'Unsupported currency' }
   const status = String(b.status || 'planned')
-  if (!['planned', 'done', 'cancelled'].includes(status)) return { error: 'Invalid status' }
+  if (!['planned', 'done', 'cancelled', 'tbc'].includes(status)) return { error: 'Invalid status' }
 
   const missionUrl = str(b.missionUrl, 1000)
   if (missionUrl) {

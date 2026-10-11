@@ -15,7 +15,8 @@ interface Mission {
 
 const day = (iso?: string | null) => (iso ? iso.slice(0, 10) : '')
 const round2 = (n: number) => Math.round(n * 100) / 100
-const tone = (s: string): Tone => (s === 'done' ? 'green' : s === 'cancelled' ? 'red' : 'gold')
+const tone = (s: string): Tone => (s === 'done' ? 'green' : s === 'cancelled' ? 'red' : s === 'tbc' ? 'blue' : 'gold')
+const label = (s: string) => (s === 'tbc' ? 'to be confirmed' : s)
 const full: React.CSSProperties = { gridColumn: '1 / -1' }
 const GRID = '1.1fr 1.6fr 1.3fr 1fr 1fr 90px'
 
@@ -83,7 +84,7 @@ function MissionForm({ mission, presetDate, onSaved, onCancel }: { mission: Miss
             <TextField type="number" step="0.01" min={0} value={f.priceTotal} onChange={(e) => { setTouched(true); set({ priceTotal: e.target.value }) }} />
           </Field>
           <Field label="Currency"><SelectField value={f.currency} onChange={(v) => set({ currency: v })}><option>AED</option><option>EUR</option><option>USD</option></SelectField></Field>
-          <Field label="Status"><SelectField value={f.status} onChange={(v) => set({ status: v })}><option value="planned">Planned</option><option value="done">Done</option><option value="cancelled">Cancelled</option></SelectField></Field>
+          <Field label="Status"><SelectField value={f.status} onChange={(v) => set({ status: v })}><option value="planned">Planned</option><option value="done">Done</option><option value="tbc">To be confirmed</option><option value="cancelled">Cancelled</option></SelectField></Field>
         </Section>
         <div style={{ display: 'flex', gap: 12 }}>
           <Button type="submit" variant="primary" disabled={saving}><Save size={14} /> {saving ? 'Saving…' : 'Save Mission'}</Button>
@@ -180,7 +181,7 @@ export default function MissionsManager() {
               <div style={text}>{m.providerName || '—'}</div>
               <div style={text}>{m.priceTotal != null ? `${m.priceTotal.toLocaleString('en-US')} ${m.currency}` : '—'}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
-                <Badge tone={tone(m.status)} dot>{m.status}</Badge>
+                <Badge tone={tone(m.status)} dot>{label(m.status)}</Badge>
                 {m.invoiceId && <Badge tone="blue">invoiced</Badge>}
               </div>
               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>

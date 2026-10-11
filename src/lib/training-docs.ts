@@ -322,7 +322,7 @@ export async function buildInvoiceContent(f: DocFields, currentInvoiceId: number
   const ids = [...new Set(f.missionIds)]
   const missions = await prisma.trainingMission.findMany({
     where: {
-      id: { in: ids }, providerId: f.providerId, status: { not: 'cancelled' },
+      id: { in: ids }, providerId: f.providerId, status: { notIn: ['cancelled', 'tbc'] },
       OR: [{ invoiceId: null }, { invoiceId: currentInvoiceId ?? -1 }],
     },
     orderBy: { startDate: 'asc' },

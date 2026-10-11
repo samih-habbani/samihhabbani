@@ -14,6 +14,7 @@ const COLORS: Record<string, { bg: string; border: string; text: string }> = {
   planned: { bg: 'rgba(184,151,74,0.16)', border: 'rgba(184,151,74,0.4)', text: '#e6cf9a' },
   done: { bg: 'rgba(122,168,116,0.16)', border: 'rgba(122,168,116,0.4)', text: '#a6d3a0' },
   cancelled: { bg: 'rgba(196,94,94,0.12)', border: 'rgba(196,94,94,0.35)', text: '#e08080' },
+  tbc: { bg: 'rgba(124,147,173,0.10)', border: 'rgba(124,147,173,0.55)', text: '#9db3cc' },
 }
 
 export default function CalendarView() {
@@ -91,8 +92,8 @@ export default function CalendarView() {
                     const c = COLORS[m.status] ?? COLORS.planned
                     return (
                       <Link key={m.id} href={`/admin/dashboard/missions?edit=${m.id}`} title={[m.title, m.clientName, m.providerName].filter(Boolean).join(' · ')}
-                        style={{ display: 'block', textDecoration: 'none', padding: '4px 7px', borderRadius: 5, background: c.bg, border: `1px solid ${c.border}`, color: c.text, fontFamily: 'var(--font-lora)', fontSize: 11, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: m.status === 'cancelled' ? 0.55 : 1 }}>
-                        {m.startTime && key(new Date(m.startDate)) === k ? <b>{m.startTime} </b> : null}{m.title}
+                        style={{ display: 'block', textDecoration: 'none', padding: '4px 7px', borderRadius: 5, background: c.bg, border: `1px ${m.status === 'tbc' ? 'dashed' : 'solid'} ${c.border}`, color: c.text, fontFamily: 'var(--font-lora)', fontSize: 11, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: m.status === 'cancelled' ? 0.55 : 1 }}>
+                        {m.status === 'tbc' ? <b>TBC · </b> : null}{m.startTime && key(new Date(m.startDate)) === k ? <b>{m.startTime} </b> : null}{m.title}
                       </Link>
                     )
                   })}
