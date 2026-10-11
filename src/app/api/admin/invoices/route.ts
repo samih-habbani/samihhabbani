@@ -70,7 +70,9 @@ export async function POST(request: Request) {
         },
       })
       if (content.missionIds.length > 0) {
-        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds } }, data: { invoiceId: created.id, status: 'done', updatedAt: new Date() } })
+        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds } }, data: { invoiceId: created.id, updatedAt: new Date() } })
+        // Only sessions that already took place become "done" — future ones stay planned.
+        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds }, startDate: { lte: new Date() } }, data: { status: 'done' } })
       }
       return created
     }, { maxWait: 10000, timeout: 30000 })

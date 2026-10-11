@@ -37,7 +37,8 @@ export async function PUT(request: Request, ctx: Ctx) {
       // Release missions that are no longer on this invoice, then link the selected ones.
       await tx.trainingMission.updateMany({ where: { invoiceId: id, id: { notIn: content.missionIds } }, data: { invoiceId: null, updatedAt: new Date() } })
       if (content.missionIds.length > 0) {
-        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds } }, data: { invoiceId: id, status: 'done', updatedAt: new Date() } })
+        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds } }, data: { invoiceId: id, updatedAt: new Date() } })
+        await tx.trainingMission.updateMany({ where: { id: { in: content.missionIds }, startDate: { lte: new Date() } }, data: { status: 'done' } })
       }
       return tx.trainingInvoice.update({
         where: { id },
