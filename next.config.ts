@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // pdfkit reads its standard-font .afm files from disk next to its own code;
+  // bundling it breaks that lookup and PDF text comes out blank.
+  serverExternalPackages: ["@react-pdf/renderer", "pdfkit"],
   async headers() {
     return [
       {

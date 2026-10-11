@@ -1,0 +1,166 @@
+// Backoffice schema for the portfolio — shares ONE Postgres database with
+// the syrama-yachting project.
+//
+// SAFETY RULES for this shared database:
+//   - Only `User` and `Provider` below map onto tables owned by syrama-yachting
+//     (kept as a subset of its columns, same names/types) — never run
+//     `prisma migrate` or `prisma db push` from this project: Prisma would see
+//     all of syrama's other tables as "drift" and could try to drop them.
+//   - The training documents live in their own `training_*` tables, created by
+//     hand with scripts/create-training-tables.sql (additive, IF NOT EXISTS).
+//   - This file is only used for `prisma generate` (typed client).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Shared with syrama-yachting ────────────────────────────────
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user")
+}
+
+model Provider {
+  id           Int       @id @default(autoincrement())
+  name         String?
+  company      String?
+  email        String?
+  phone        String?
+  city         String?
+  country      String?
+  type         String?
+  services     String[]  @default([])
+  description  String?
+  isActive     Boolean?  @map("is_active")
+  website      String?
+  instagram    String?
+  catalogUrl   String?   @map("catalog_url")
+  notes        String?
+  position     String?
+  firstContact String?   @map("first_contact")
+  firstName    String?   @map("first_name")
+  region       String?
+  updatedAt    DateTime? @map("updated_at")
+  manager      String?
+  address      String?
+  postalCode   String?   @map("postal_code")
+
+  @@map("provider")
+}
+
+// ── Owned by the portfolio backoffice ──────────────────────────
+
+// A training quote ("devis"). Can later be converted to a TrainingInvoice.
+// providerId is a loose reference (no FK), same convention as syrama's
+// invoice table; the recipient's name/address is snapshotted at save time so
+// an issued document never changes if the provider record is edited later.
+model TrainingQuote {
+  id               Int       @id @default(autoincrement())
+  quoteNumber      String    @unique @map("quote_number")
+  providerId       Int?      @map("provider_id")
+  billToName       String?   @map("bill_to_name")
+  billToAddress    String?   @map("bill_to_address")
+  title            String
+  description      String?
+  topic            String?
+  clientName       String?   @map("client_name")
+  location         String?
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  startTime        String?   @map("start_time")
+  endTime          String?   @map("end_time")
+  hours            Float?
+  hourlyRate       Float?    @map("hourly_rate")
+  priceTotal       Float?    @map("price_total")
+  currency         String    @default("AED")
+  applyVat         Boolean   @default(false) @map("apply_vat")
+  vatRate          Float     @default(0) @map("vat_rate")
+  // draft | sent | accepted | declined | invoiced
+  status           String    @default("draft")
+  validUntil       DateTime? @map("valid_until")
+  notes            String?
+  invoiceId        Int?      @map("invoice_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+
+  @@index([providerId])
+  @@index([status])
+  @@map("training_quote")
+}
+
+model TrainingInvoice {
+  id               Int       @id @default(autoincrement())
+  invoiceNumber    String    @unique @map("invoice_number")
+  quoteId          Int?      @map("quote_id")
+  providerId       Int?      @map("provider_id")
+  billToName       String?   @map("bill_to_name")
+  billToAddress    String?   @map("bill_to_address")
+  title            String
+  description      String?
+  topic            String?
+  clientName       String?   @map("client_name")
+  location         String?
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  startTime        String?   @map("start_time")
+  endTime          String?   @map("end_time")
+  hours            Float?
+  hourlyRate       Float?    @map("hourly_rate")
+  priceTotal       Float?    @map("price_total")
+  currency         String    @default("AED")
+  applyVat         Boolean   @default(false) @map("apply_vat")
+  vatRate          Float     @default(0) @map("vat_rate")
+  // draft | sent | paid
+  status           String    @default("draft")
+  dueDate          DateTime? @map("due_date")
+  notes            String?
+  // One entry per billed session (see InvoiceLine in lib/training-docs.ts)
+  lines            Json?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+
+  @@index([providerId])
+  @@index([status])
+  @@map("training_invoice")
+}
+
+// A training mission (a session to deliver). Feeds the agenda and can be
+// selected when generating an invoice. invoiceId is set once billed.
+model TrainingMission {
+  id           Int       @id @default(autoincrement())
+  providerId   Int       @map("provider_id")
+  title        String
+  description  String?
+  clientName   String?   @map("client_name")
+  location     String?
+  missionUrl   String?   @map("mission_url")
+  participants Int?
+  startDate    DateTime  @map("start_date")
+  endDate      DateTime? @map("end_date")
+  startTime    String?   @map("start_time")
+  endTime      String?   @map("end_time")
+  hours        Float?
+  hourlyRate   Float?    @map("hourly_rate")
+  priceTotal   Float?    @map("price_total")
+  currency     String    @default("AED")
+  // planned | done | cancelled
+  status       String    @default("planned")
+  invoiceId    Int?      @map("invoice_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @map("updated_at")
+
+  @@index([startDate])
+  @@index([providerId])
+  @@map("training_mission")
+}

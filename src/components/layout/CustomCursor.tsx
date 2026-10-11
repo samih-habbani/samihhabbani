@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 
 export function CustomCursor() {
+  const pathname = usePathname()
   const [visible,  setVisible]  = useState(false)
   const [hovering, setHovering] = useState(false)
 
@@ -36,7 +38,7 @@ export function CustomCursor() {
     }
   }, [rawX, rawY, visible])
 
-  if (!visible) return null
+  if (!visible || pathname.startsWith('/admin')) return null
 
   return (
     <motion.div
