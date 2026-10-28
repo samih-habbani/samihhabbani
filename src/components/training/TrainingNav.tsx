@@ -45,15 +45,6 @@ export function TrainingNav() {
 
         <div className="flex items-center gap-2">
           <a
-            href={PROOF_LINKS.trainerCV.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-[10px] font-bold tracking-[0.15em]"
-            style={{ backgroundColor: '#00FF94', color: '#030303', padding: '6px 12px' }}
-          >
-            CV
-          </a>
-          <a
             href={PROOF_LINKS.trainingCatalogue.url}
             target="_blank"
             rel="noopener noreferrer"

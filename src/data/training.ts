@@ -72,8 +72,6 @@ export const DELIVERY_FORMATS = [
 ]
 
 export const LOCATION = {
-  base:     'Dubai, UAE — UAE Resident',
-  onsite:   'Available for onsite delivery across the UAE & GCC',
   virtual:  'Available for international virtual delivery',
   pricing:  'Corporate pricing available upon request',
 }
@@ -415,7 +413,6 @@ export const DEV_TRAINING: DevGroup[] = [
 export const PROOF_LINKS = {
   elearningPlatform: { label: 'Académie WS — My e-Learning Platform', url: 'https://www.academiews.com/', desc: 'Founded and built 2022–2025. Online learning platform with progressive learning paths, from beginner to professional level.' },
   youtube:           { label: 'Discover my YouTube Channel', url: 'https://www.youtube.com/@samih-habbani', desc: '1,000+ educational videos produced across programming and digital-marketing topics.' },
-  trainerCV:         { label: 'Download Corporate AI Trainer CV', url: '/samih-habbani-corporate-ai-trainer-cv.pdf' },
   trainingCatalogue: { label: 'Download Training Catalogue (PDF)', url: '/samih-habbani-training-catalogue.pdf' },
   linkedin:          { label: 'LinkedIn', url: 'https://linkedin.com/in/samih-habbani' },
 }

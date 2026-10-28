@@ -20,7 +20,6 @@ export const HERO = {
   meta: {
     STATUS:   'AVAILABLE',
     ROLE:     'FWDAI-ENG',
-    LOCATION: 'REMOTE · Dubai',
   },
 }
 

@@ -378,18 +378,6 @@ export function Contact() {
                 ))}
               </div>
             </div>
-
-            <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)' }} />
-
-            {/* Location */}
-            <div>
-              <span className="font-mono" style={{ fontSize: '9px', color: '#ffffff', letterSpacing: '0.2em', display: 'block', marginBottom: '8px' }}>
-                LOCATION
-              </span>
-              <span className="font-mono" style={{ fontSize: '12px', color: '#ffffff', letterSpacing: '0.05em' }}>
-                Dubai / Remote
-              </span>
-            </div>
           </motion.div>
           </div>
 

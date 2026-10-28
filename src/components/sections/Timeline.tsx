@@ -108,7 +108,7 @@ const ENTRIES = [
   {
     year:  '2026',
     log:   'CURRENT',
-    title: 'Dubai — New Runtime',
+    title: 'New Runtime',
     desc:  'AI & coding trainer. Business development for TheKidSpace, Logiscool, Morgan International.',
     tag:   'NOW',
     current: true,

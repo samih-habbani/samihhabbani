@@ -179,7 +179,7 @@ export default function DocumentForm({ kind, doc, initialProvider, onSaved, onCa
           <Section title="Missions to bill">
             <div style={full}>
               {missions.length === 0 ? (
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#8f8f7f' }}>No unbilled mission for this provider — fill the invoice by hand below, or create a mission first.</div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#8f8f7f' }}>No billable mission for this provider. Missions already on an invoice, cancelled, or marked “To be confirmed” are hidden — fill the invoice by hand below, or create a mission first.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {missions.map((m) => (

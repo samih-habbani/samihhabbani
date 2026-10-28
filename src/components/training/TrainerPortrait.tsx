@@ -89,7 +89,6 @@ export function TrainerPortrait({ visible }: { visible: boolean }) {
         {[
           ['STATUS',   'AVAILABLE'],
           ['ROLE',     'AI-TRAINER'],
-          ['LOCATION', 'DUBAI'],
         ].map(([key, value]) => (
           <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="font-mono uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em', color: key === 'STATUS' ? '#00FF94' : '#ffffff' }}>

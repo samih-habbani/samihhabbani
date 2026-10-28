@@ -8,9 +8,9 @@ import { Testimonials }        from '@/components/training/Testimonials'
 import { TrustNetwork }        from '@/components/sections/TrustNetwork'
 import { ProofGalleryContact } from '@/components/training/ProofGalleryContact'
 
-const TITLE = 'Samih Habbani — Corporate AI Trainer & Development Trainer | Dubai, UAE'
+const TITLE = 'Samih Habbani — Corporate AI Trainer & Development Trainer'
 const DESCRIPTION =
-  'Corporate AI Trainer, Microsoft Copilot Trainer (AB-730) and Full-Stack Developer based in Dubai. Generative AI, Microsoft Copilot, AI + Finance and full-stack development training for corporate teams. 5,000+ learners trained, 40+ programs designed.'
+  'Corporate AI Trainer, Microsoft Copilot Trainer (AB-730) and Full-Stack Developer. Generative AI, Microsoft Copilot, AI + Finance and full-stack development training for corporate teams. 5,000+ learners trained, 40+ programs designed.'
 
 export const metadata: Metadata = {
   title: TITLE,

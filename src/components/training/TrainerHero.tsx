@@ -84,8 +84,7 @@ export function TrainerHero() {
             className="font-sans"
             style={{ fontSize: '14px', color: '#ffffff', opacity: 0.85, lineHeight: 1.7, maxWidth: '620px', marginBottom: '28px' }}
           >
-            10+ years of engineering experience, 7+ years delivering corporate training. Dubai-based, available
-            across the UAE, GCC and internationally.
+            10+ years of engineering experience, 7+ years delivering corporate training.
           </motion.p>
 
           <motion.div

@@ -146,20 +146,11 @@ export function ProofGalleryContact() {
               <span style={{ color: '#00FF94' }}>{'>'}</span> Looking for an AI or development trainer?
             </motion.p>
             <p className="font-sans" style={{ fontSize: '14px', color: '#ffffff', opacity: 0.7, marginBottom: '40px', lineHeight: 1.75 }}>
-              Available for corporate training missions, academy partnerships and recurring programs — onsite in the
-              UAE & GCC, or fully remote. Let&apos;s talk about your team&apos;s needs.
+              Available for corporate training missions, academy partnerships and recurring programs — onsite or
+              fully remote. Let&apos;s talk about your team&apos;s needs.
             </p>
 
             <div className="flex flex-wrap gap-4" style={{ marginBottom: '40px' }}>
-              <a
-                href={PROOF_LINKS.trainerCV.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-[11px] font-bold tracking-[0.15em]"
-                style={{ backgroundColor: '#00FF94', color: '#030303', padding: '14px 24px' }}
-              >
-                DOWNLOAD TRAINER CV
-              </a>
               <a
                 href={PROOF_LINKS.trainingCatalogue.url}
                 target="_blank"
@@ -213,12 +204,10 @@ export function ProofGalleryContact() {
             <div className="flex items-center gap-2" style={{ marginTop: '32px', marginBottom: '10px' }}>
               <IconPin size={14} color="#00FF94" />
               <p className="font-mono text-[10px] font-semibold" style={{ color: '#ffffff', letterSpacing: '0.18em', margin: 0 }}>
-                LOCATION & AVAILABILITY
+                AVAILABILITY
               </p>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="font-sans text-[12px]" style={{ color: '#ffffff', opacity: 0.75 }}>{LOCATION.base}</span>
-              <span className="font-sans text-[12px]" style={{ color: '#ffffff', opacity: 0.75 }}>{LOCATION.onsite}</span>
               <span className="font-sans text-[12px]" style={{ color: '#ffffff', opacity: 0.75 }}>{LOCATION.virtual}</span>
               <span className="font-sans text-[12px]" style={{ color: '#ffffff', opacity: 0.75 }}>{LOCATION.pricing}</span>
             </div>
