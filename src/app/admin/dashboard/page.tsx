@@ -40,13 +40,13 @@ export default async function OverviewPage() {
   ])
 
   // Earned = delivered missions (date already passed), excl. VAT, per currency
-  // Month card = everything planned for the month (delivered + still to come), as per the missions;
-  // unconfirmed ("to be confirmed") ones are shown separately and never counted.
+  // Month card = everything planned for the month, confirmed or not; the breakdown underneath
+  // separates what is delivered, confirmed-but-coming, and still to be confirmed.
   const expectedMonth: Totals = {}, deliveredMonth: Totals = {}, comingMonth: Totals = {}, tbcMonth: Totals = {}, earnedYear: Totals = {}
   for (const m of missionsYear) {
     const amount = m.priceTotal ?? 0
     const inMonth = m.startDate >= monthStart && m.startDate < monthEnd
-    if (m.status === 'tbc') { if (inMonth) add(tbcMonth, m.currency, amount); continue }
+    if (m.status === 'tbc') { if (inMonth) { add(tbcMonth, m.currency, amount); add(expectedMonth, m.currency, amount) } continue }
     if (m.startDate <= endOfToday) add(earnedYear, m.currency, amount)
     if (inMonth) {
       add(expectedMonth, m.currency, amount)
@@ -94,10 +94,13 @@ export default async function OverviewPage() {
       data={{
         monthLabel: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
         earnedMonth: label(expectedMonth),
-        scheduledMonth: [
-          has(expectedMonth) ? `${label(deliveredMonth)} delivered · ${label(comingMonth)} still to come` : 'No mission planned this month',
-          has(tbcMonth) ? `+ ${label(tbcMonth)} to be confirmed` : '',
-        ].filter(Boolean).join(' · '),
+        scheduledMonth: has(expectedMonth)
+          ? [
+              has(deliveredMonth) ? `${label(deliveredMonth)} delivered` : '',
+              has(comingMonth) ? `${label(comingMonth)} confirmed, still to come` : '',
+              has(tbcMonth) ? `${label(tbcMonth)} to be confirmed` : '',
+            ].filter(Boolean).join(' · ')
+          : 'No mission planned this month',
         earnedYear: label(earnedYear),
         year: y,
         toSend: label(toSend),
