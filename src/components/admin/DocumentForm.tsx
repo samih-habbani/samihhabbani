@@ -53,11 +53,13 @@ interface Props {
   kind: DocKind
   doc: DocRow | null
   initialProvider: ProviderLite | null
+  // mission ids to tick when opening a new invoice (e.g. from the Overview reminders)
+  presetMissionIds?: number[]
   onSaved: (saved: { id: number; number: string }) => void
   onCancel: () => void
 }
 
-export default function DocumentForm({ kind, doc, initialProvider, onSaved, onCancel }: Props) {
+export default function DocumentForm({ kind, doc, initialProvider, presetMissionIds, onSaved, onCancel }: Props) {
   const isQuote = kind === 'quote'
   const [provider, setProvider] = useState<ProviderLite | null>(initialProvider)
   const [f, setF] = useState({
@@ -96,7 +98,7 @@ export default function DocumentForm({ kind, doc, initialProvider, onSaved, onCa
       .then((r) => (r.ok ? r.json() : { missions: [] }))
       .then((d) => {
         setMissions(d.missions)
-        if (!selectionInit) { setSelected(d.missions.filter((m: AvailableMission) => doc && m.invoiceId === doc.id).map((m: AvailableMission) => m.id)); setSelectionInit(true) }
+        if (!selectionInit) { setSelected(d.missions.filter((m: AvailableMission) => (doc ? m.invoiceId === doc.id : presetMissionIds?.includes(m.id))).map((m: AvailableMission) => m.id)); setSelectionInit(true) }
       })
       .catch(() => {})
     return () => ctrl.abort()

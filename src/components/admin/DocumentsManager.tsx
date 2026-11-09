@@ -40,6 +40,7 @@ export default function DocumentsManager({ kind }: { kind: DocKind }) {
   const [totalPages, setTotalPages] = useState(1)
   const [status, setStatus] = useState('')
   const [form, setForm] = useState<{ doc: Row | null } | null>(null)
+  const [preset, setPreset] = useState<{ provider: ProviderLite; missionIds: number[] } | null>(null)
   const [notice, setNotice] = useState<{ tone: 'error' | 'success'; text: string; pdf?: string } | null>(null)
 
   const load = useCallback(async (p: number) => {
@@ -63,8 +64,13 @@ export default function DocumentsManager({ kind }: { kind: DocKind }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount / filter change
   useEffect(() => { load(1) }, [load])
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount / filter change
-    if (new URLSearchParams(window.location.search).get('new') === '1') setForm({ doc: null })
+    const q = new URLSearchParams(window.location.search)
+    if (q.get('new') === '1') {
+      const pid = parseInt(q.get('providerId') || '')
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read the prefill from the URL on mount
+      setPreset(pid ? { provider: { id: pid, name: null, firstName: null, company: q.get('providerName'), city: null, country: null, type: null }, missionIds: (q.get('missions') || '').split(',').map(Number).filter(Boolean) } : null)
+      setForm({ doc: null })
+    }
   }, [])
 
   const call = async (url: string, init: RequestInit, successText?: string) => {
@@ -102,7 +108,8 @@ export default function DocumentsManager({ kind }: { kind: DocKind }) {
         <DocumentForm
           kind={kind}
           doc={d}
-          initialProvider={initialProvider}
+          initialProvider={initialProvider ?? (!d ? preset?.provider ?? null : null)}
+          presetMissionIds={!d ? preset?.missionIds : undefined}
           onCancel={() => setForm(null)}
           onSaved={({ id, number }) => {
             setForm(null)
@@ -125,7 +132,7 @@ export default function DocumentsManager({ kind }: { kind: DocKind }) {
         title={isQuote ? 'Quotes' : 'Invoices'}
         description={isQuote ? 'Training proposals — convert an accepted quote into an invoice in one click.' : 'Invoices issued to your providers for training delivered.'}
         breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: isQuote ? 'Quotes' : 'Invoices' }]}
-        action={<Button variant="primary" onClick={() => { setNotice(null); setForm({ doc: null }) }}><Plus size={14} strokeWidth={2.5} /> New {noun.toLowerCase()}</Button>}
+        action={<Button variant="primary" onClick={() => { setNotice(null); setPreset(null); setForm({ doc: null }) }}><Plus size={14} strokeWidth={2.5} /> New {noun.toLowerCase()}</Button>}
       />
 
       {notice && (

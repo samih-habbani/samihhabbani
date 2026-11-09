@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:local": "NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1 next build"
+    "build:local": "NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1 next build",
+    "db:pull-prod": "bash scripts/pull-prod-db.sh"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
