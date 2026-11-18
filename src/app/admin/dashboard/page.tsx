@@ -23,11 +23,14 @@ export default async function OverviewPage() {
   const monthEnd = new Date(Date.UTC(y, mo + 1, 1))
   const yearStart = new Date(Date.UTC(y, 0, 1))
   const yearEnd = new Date(Date.UTC(y + 1, 0, 1))
+  const nextStart = monthEnd
+  const nextEnd = new Date(Date.UTC(y, mo + 2, 1))
+  const queryEnd = nextEnd > yearEnd ? nextEnd : yearEnd // next month can fall in the following year
   const endOfToday = new Date(Date.UTC(y, mo, now.getUTCDate(), 23, 59, 59, 999))
   // Only missions that count as real work: not cancelled, not still "to be confirmed"
   const counts = { status: { notIn: ['cancelled', 'tbc'] } }
 
-  const [providers, quotesYear, invoicesYear, recentInvoices, recentQuotes, sentInvoices, draftInvoices, missionsYear, unbilled] = await Promise.all([
+  const [providers, quotesYear, invoicesYear, recentInvoices, recentQuotes, sentInvoices, draftInvoices, missionsYear, unbilled, tbcMissions] = await Promise.all([
     prisma.provider.count({ where: { type: { contains: 'training', mode: 'insensitive' } } }),
     prisma.trainingQuote.count({ where: { createdAt: { gte: yearStart } } }),
     prisma.trainingInvoice.count({ where: { createdAt: { gte: yearStart } } }),
@@ -35,19 +38,27 @@ export default async function OverviewPage() {
     prisma.trainingQuote.findMany({ orderBy: { id: 'desc' }, take: 5 }),
     prisma.trainingInvoice.findMany({ where: { status: 'sent' }, select: { priceTotal: true, applyVat: true, vatRate: true, currency: true } }),
     prisma.trainingInvoice.findMany({ where: { status: 'draft' }, orderBy: { id: 'desc' } }),
-    prisma.trainingMission.findMany({ where: { status: { not: 'cancelled' }, startDate: { gte: yearStart, lt: yearEnd } }, select: { startDate: true, priceTotal: true, currency: true, status: true } }),
+    prisma.trainingMission.findMany({ where: { status: { not: 'cancelled' }, startDate: { gte: yearStart, lt: queryEnd } }, select: { startDate: true, priceTotal: true, currency: true, status: true } }),
     prisma.trainingMission.findMany({ where: { ...counts, invoiceId: null, startDate: { lte: endOfToday } }, orderBy: { startDate: 'asc' } }),
+    prisma.trainingMission.findMany({ where: { status: 'tbc' }, orderBy: [{ startDate: 'asc' }, { id: 'asc' }] }),
   ])
 
   // Earned = delivered missions (date already passed), excl. VAT, per currency
   // Month card = everything planned for the month, confirmed or not; the breakdown underneath
   // separates what is delivered, confirmed-but-coming, and still to be confirmed.
   const expectedMonth: Totals = {}, deliveredMonth: Totals = {}, comingMonth: Totals = {}, tbcMonth: Totals = {}, earnedYear: Totals = {}
+  const expectedNext: Totals = {}, comingNext: Totals = {}, tbcNext: Totals = {}
   for (const m of missionsYear) {
     const amount = m.priceTotal ?? 0
     const inMonth = m.startDate >= monthStart && m.startDate < monthEnd
-    if (m.status === 'tbc') { if (inMonth) { add(tbcMonth, m.currency, amount); add(expectedMonth, m.currency, amount) } continue }
-    if (m.startDate <= endOfToday) add(earnedYear, m.currency, amount)
+    const inNext = m.startDate >= nextStart && m.startDate < nextEnd
+    if (m.status === 'tbc') {
+      if (inMonth) { add(tbcMonth, m.currency, amount); add(expectedMonth, m.currency, amount) }
+      if (inNext) { add(tbcNext, m.currency, amount); add(expectedNext, m.currency, amount) }
+      continue
+    }
+    if (m.startDate <= endOfToday && m.startDate < yearEnd) add(earnedYear, m.currency, amount)
+    if (inNext) { add(expectedNext, m.currency, amount); add(comingNext, m.currency, amount) }
     if (inMonth) {
       add(expectedMonth, m.currency, amount)
       add(m.startDate <= endOfToday ? deliveredMonth : comingMonth, m.currency, amount)
@@ -58,12 +69,12 @@ export default async function OverviewPage() {
   const awaiting: Totals = {}
   for (const i of sentInvoices) add(awaiting, i.currency, grossTotal(i))
 
-  // To send this month = invoices already generated but still draft + this month's delivered work not yet invoiced
+  // To send = every past session not sent yet: draft invoices whose sessions are over + delivered missions with no invoice (any month)
   const draftTotals: Totals = {}, toGenerateMonth: Totals = {}
   // A draft only becomes "to send" once its last session has taken place
   const isReady = (d: { endDate: Date | null; startDate: Date | null }) => (d.endDate ?? d.startDate ?? new Date(0)) <= endOfToday
   for (const d of draftInvoices) if (isReady(d)) add(draftTotals, d.currency, grossTotal(d))
-  for (const m of unbilled) if (m.startDate >= monthStart) add(toGenerateMonth, m.currency, m.priceTotal ?? 0)
+  for (const m of unbilled) add(toGenerateMonth, m.currency, m.priceTotal ?? 0)
   const toSend: Totals = {}
   for (const [c, n] of Object.entries(draftTotals)) add(toSend, c, n)
   for (const [c, n] of Object.entries(toGenerateMonth)) add(toSend, c, n)
@@ -85,6 +96,21 @@ export default async function OverviewPage() {
     g.total = aed(sum, g.currency)
   }
 
+  // Every mission whose date is still "to be confirmed", soonest first
+  const shortDate = (d: Date) => d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
+  const tbcNamed = await withProviderNames(tbcMissions)
+  const toConfirm = tbcNamed.map((m) => ({
+    id: m.id,
+    title: m.title,
+    providerName: m.providerName ?? `#${m.providerId}`,
+    clientName: m.clientName,
+    location: m.location,
+    date: m.endDate && m.endDate.getTime() !== m.startDate.getTime() ? `${shortDate(m.startDate)} → ${shortDate(m.endDate)}` : shortDate(m.startDate),
+    time: m.startTime ? `${m.startTime}${m.endTime ? `–${m.endTime}` : ''}` : null,
+    amount: m.priceTotal != null ? aed(m.priceTotal, m.currency) : null,
+    past: m.startDate <= endOfToday,
+  }))
+
   const toItem = (d: { id: number; billToName: string | null; title: string; status: string; priceTotal: number | null; applyVat: boolean; vatRate: number; currency: string }, number: string): OverviewItem => ({
     id: d.id, number, billTo: d.billToName, title: d.title, status: d.status, amount: aed(grossTotal(d), d.currency),
   })
@@ -93,6 +119,11 @@ export default async function OverviewPage() {
     <OverviewView
       data={{
         monthLabel: now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        nextMonthLabel: nextStart.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        expectedNext: label(expectedNext),
+        nextBreakdown: has(expectedNext)
+          ? [has(comingNext) ? `${label(comingNext)} confirmed` : '', has(tbcNext) ? `${label(tbcNext)} to be confirmed` : ''].filter(Boolean).join(' · ')
+          : 'No mission planned next month',
         earnedMonth: label(expectedMonth),
         scheduledMonth: has(expectedMonth)
           ? [
@@ -111,6 +142,7 @@ export default async function OverviewPage() {
         invoices: recentInvoices.map((i) => toItem(i, i.invoiceNumber)),
         quotes: recentQuotes.map((q) => toItem(q, q.quoteNumber)),
         toGenerate: [...groups.values()],
+        toConfirm,
         drafts: draftInvoices.map((i) => ({
           ...toItem(i, i.invoiceNumber),
           note: isReady(i) ? 'Ready to send' : `Not ready — sessions until ${(i.endDate ?? i.startDate)!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' })}`,

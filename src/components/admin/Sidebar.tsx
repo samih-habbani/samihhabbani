@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, FileText, Receipt, Building2, ExternalLink, LogOut, Briefcase, CalendarDays } from 'lucide-react'
+import { LayoutDashboard, FileText, Receipt, Building2, ExternalLink, LogOut, Briefcase, CalendarDays, CalendarClock, ListChecks } from 'lucide-react'
 
 const NAV = [
   { label: 'Main', items: [{ label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard, exact: true }] },
@@ -11,6 +11,8 @@ const NAV = [
     items: [
       { label: 'Calendar', href: '/admin/dashboard/calendar', icon: CalendarDays },
       { label: 'Missions', href: '/admin/dashboard/missions', icon: Briefcase },
+      { label: 'Appointments', href: '/admin/dashboard/appointments', icon: CalendarClock },
+      { label: 'Tasks', href: '/admin/dashboard/tasks', icon: ListChecks },
       { label: 'Quotes', href: '/admin/dashboard/quotes', icon: FileText },
       { label: 'Invoices', href: '/admin/dashboard/invoices', icon: Receipt },
     ],

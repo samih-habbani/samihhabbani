@@ -164,3 +164,39 @@ model TrainingMission {
   @@index([providerId])
   @@map("training_mission")
 }
+
+// A calendar appointment (meeting, call…) — NOT a billable mission. The provider
+// link is optional and loose (no FK), like the other training tables.
+model TrainingAppointment {
+  id         Int      @id @default(autoincrement())
+  title      String
+  providerId Int?     @map("provider_id")
+  date       DateTime
+  startTime  String?  @map("start_time")
+  endTime    String?  @map("end_time")
+  location   String?
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@index([date])
+  @@map("training_appointment")
+}
+
+// A to-do for the calendar ("prepare X for client Y"). Provider (= client) and mission
+// links are both optional and loose (no FK), like the other training tables.
+model TrainingTask {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  providerId  Int?      @map("provider_id")
+  missionId   Int?      @map("mission_id")
+  dueDate     DateTime  @map("due_date")
+  done        Boolean   @default(false)
+  doneAt      DateTime? @map("done_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+
+  @@index([dueDate])
+  @@map("training_task")
+}

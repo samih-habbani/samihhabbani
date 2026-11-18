@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, Receipt, Building2, Wallet, TrendingUp, Send, Clock } from 'lucide-react'
+import { FileText, Receipt, Building2, Wallet, TrendingUp, Send, Clock, CalendarDays } from 'lucide-react'
 import { Badge, ButtonLink, Card, EmptyState, PageHeader, StatCard, type Tone } from './ui'
 
 export interface OverviewItem { id: number; number: string; billTo: string | null; title: string; amount: string; status: string; note?: string; ready?: boolean }
@@ -13,6 +13,9 @@ export interface ToGenerateGroup {
 }
 export interface OverviewData {
   monthLabel: string
+  nextMonthLabel: string
+  expectedNext: string
+  nextBreakdown: string
   earnedMonth: string
   scheduledMonth: string | null // breakdown line under the month figure
   earnedYear: string
@@ -27,7 +30,19 @@ export interface OverviewData {
   invoices: OverviewItem[]
   quotes: OverviewItem[]
   toGenerate: ToGenerateGroup[]
+  toConfirm: ToConfirmItem[]
   drafts: OverviewItem[]
+}
+export interface ToConfirmItem {
+  id: number
+  title: string
+  providerName: string
+  clientName: string | null
+  location: string | null
+  date: string
+  time: string | null
+  amount: string | null
+  past: boolean
 }
 
 const statusTone = (s: string): Tone => (s === 'paid' || s === 'accepted' ? 'green' : s === 'sent' ? 'blue' : s === 'declined' ? 'red' : s === 'invoiced' ? 'gold' : 'neutral')
@@ -71,8 +86,9 @@ export default function OverviewView({ data }: { data: OverviewData }) {
       />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, marginBottom: 18 }}>
         <StatCard label={`Expected — ${data.monthLabel}`} value={<span style={{ fontSize: 26 }}>{data.earnedMonth}</span>} sub={data.scheduledMonth ?? ''} icon={Wallet} tone="green" />
+        <StatCard label={`Expected — ${data.nextMonthLabel}`} value={<span style={{ fontSize: 26 }}>{data.expectedNext}</span>} sub={data.nextBreakdown} icon={CalendarDays} tone="green" />
         <StatCard label={`Earned — ${data.year}`} value={<span style={{ fontSize: 26 }}>{data.earnedYear}</span>} sub="Missions delivered, excl. VAT" icon={TrendingUp} tone="gold" />
-        <StatCard label="To send this month" value={<span style={{ fontSize: 26 }}>{data.toSend}</span>} sub={data.toSendDetail} icon={Send} tone="red" />
+        <StatCard label="To send" value={<span style={{ fontSize: 26 }}>{data.toSend}</span>} sub={data.toSendDetail} icon={Send} tone="red" />
         <StatCard label="Awaiting payment" value={<span style={{ fontSize: 26 }}>{data.awaiting}</span>} sub="Invoices sent, not yet paid" icon={Clock} tone="blue" />
       </div>
       <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#6b6b60', marginBottom: 18 }}>All amounts in AED — {data.fxNote}</div>
@@ -109,6 +125,24 @@ export default function OverviewView({ data }: { data: OverviewData }) {
         </Card>
         <List title="Drafts to send" items={data.drafts} icon={Send} empty="No draft waiting" />
       </div>
+
+      <Card style={{ overflow: 'hidden', marginTop: 28 }}>
+        <div style={{ ...head, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <span>Dates to confirm</span>
+          {data.toConfirm.length > 0 && <Badge tone="blue">{data.toConfirm.length} to validate</Badge>}
+        </div>
+        {data.toConfirm.length === 0 ? <EmptyState icon={CalendarDays} title="Nothing to confirm" description="Every mission date is confirmed." /> : data.toConfirm.map((m) => (
+          <a key={m.id} href={`/admin/dashboard/missions?edit=${m.id}`} style={{ ...row, textDecoration: 'none' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: '#f5eedd' }}>{m.date}{m.time ? <span style={{ color: '#8f8f7f' }}> · {m.time}</span> : null}{m.past ? <span style={{ marginLeft: 8 }}><Badge tone="red">date passed</Badge></span> : null}</div>
+              <div style={{ color: '#8f8f7f', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {m.title} · {m.providerName}{m.clientName ? ` · client: ${m.clientName}` : ''}{m.location ? ` · ${m.location}` : ''}
+              </div>
+            </div>
+            <div style={{ color: '#d8d8cc', flexShrink: 0 }}>{m.amount ?? '—'}</div>
+          </a>
+        ))}
+      </Card>
     </div>
   )
 }

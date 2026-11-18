@@ -28,6 +28,23 @@ export async function GET(request: Request) {
       where.AND = [{ OR: [{ invoiceId: null }, { invoiceId: forInvoice }] }]
     }
 
+    // List filters: free-text search (title, client, location, description, provider) and status
+    const q = (sp.get('q') || '').trim().slice(0, 100)
+    const statusFilter = sp.get('status')
+    if (statusFilter && ['planned', 'done', 'cancelled', 'tbc'].includes(statusFilter) && sp.get('available') !== '1') where.status = statusFilter
+    if (q) {
+      const ci = { contains: q, mode: 'insensitive' as const }
+      const matching = await prisma.provider.findMany({
+        where: { type: { contains: 'training', mode: 'insensitive' }, OR: [{ company: ci }, { name: ci }, { firstName: ci }] },
+        select: { id: true },
+        take: 200,
+      })
+      const search: Prisma.TrainingMissionWhereInput = {
+        OR: [{ title: ci }, { clientName: ci }, { location: ci }, { description: ci }, { providerId: { in: matching.map((p) => p.id) } }],
+      }
+      where.AND = [...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []), search]
+    }
+
     const page = Math.max(1, parseInt(sp.get('page') || '1') || 1)
     const limit = from && to ? 500 : Math.min(100, parseInt(sp.get('limit') || '20') || 20)
     const [missions, total] = await Promise.all([

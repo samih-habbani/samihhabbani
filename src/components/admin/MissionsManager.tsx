@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, ArrowLeft, Briefcase, Pencil, Trash2, Save, ExternalLink, Users } from 'lucide-react'
+import { Plus, ArrowLeft, Briefcase, Pencil, Trash2, Save, ExternalLink, Users, Search } from 'lucide-react'
 import ProviderPicker, { type ProviderLite } from './ProviderPicker'
 import { Badge, Button, Card, EmptyState, Field, Notice, PageHeader, Pagination, SelectField, Section, TextArea, TextField, type Tone } from './ui'
 
@@ -102,16 +102,28 @@ export default function MissionsManager() {
   const [totalPages, setTotalPages] = useState(1)
   const [form, setForm] = useState<{ mission: Mission | null; date: string } | null>(null)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [debounced, setDebounced] = useState('')
+  const filtered = Boolean(debounced || statusFilter)
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(search.trim()), 300)
+    return () => clearTimeout(t)
+  }, [search])
 
   const load = useCallback(async (p: number) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/admin/missions?page=${p}&limit=20`)
+      const qs = new URLSearchParams({ page: String(p), limit: '20' })
+      if (debounced) qs.set('q', debounced)
+      if (statusFilter) qs.set('status', statusFilter)
+      const res = await fetch(`/api/admin/missions?${qs}`)
       if (res.ok) { const d = await res.json(); setRows(d.missions); setTotalPages(d.totalPages); setPage(p) }
     } finally { setLoading(false) }
-  }, [])
+  }, [debounced, statusFilter])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount and whenever the filters change
   useEffect(() => { load(1) }, [load])
   useEffect(() => {
     const q = new URLSearchParams(window.location.search)
@@ -158,12 +170,26 @@ export default function MissionsManager() {
         </div>}
       />
       {error && <Notice tone="error">{error}</Notice>}
-      {loading ? (
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 18 }}>
+        <div style={{ position: 'relative', flex: '1 1 280px', maxWidth: 420 }}>
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8f8f7f', pointerEvents: 'none' }} />
+          <TextField value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search a mission, client, provider, location…" style={{ paddingLeft: 34 }} />
+        </div>
+        <div style={{ width: 190 }}>
+          <SelectField value={statusFilter} onChange={setStatusFilter}>
+            <option value="">All statuses</option><option value="planned">Planned</option><option value="done">Done</option><option value="tbc">To be confirmed</option><option value="cancelled">Cancelled</option>
+          </SelectField>
+        </div>
+        {filtered && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setStatusFilter('') }}>Clear</Button>}
+      </div>
+      {loading && rows.length === 0 ? (
         <Card style={{ textAlign: 'center', padding: '60px 20px', fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading…</Card>
       ) : rows.length === 0 ? (
-        <Card><EmptyState icon={Briefcase} title="No missions yet" description="Create your first training mission with the button above." /></Card>
+        <Card>{filtered
+          ? <EmptyState icon={Search} title="No matching mission" description="Try another keyword or clear the filters." />
+          : <EmptyState icon={Briefcase} title="No missions yet" description="Create your first training mission with the button above." />}</Card>
       ) : (
-        <Card style={{ overflow: 'hidden' }}>
+        <Card style={{ overflow: 'hidden', opacity: loading ? 0.6 : 1, transition: 'opacity .15s' }}>
           <div style={{ display: 'grid', gridTemplateColumns: GRID, gap: 16, padding: '14px 24px', borderBottom: '1px solid rgba(184,151,74,0.12)', fontFamily: 'var(--font-lora)', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f' }}>
             <div>Date</div><div>Training</div><div>Provider</div><div>Amount</div><div>Status</div><div />
           </div>
